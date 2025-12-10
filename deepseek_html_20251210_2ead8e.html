@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фрактальный Генератор</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary-dark: #2c3e50;
+            --primary-light: #ecf0f1;
+            --accent-color: #3498db;
+            --gray-gradient: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%);
+            --dark-gradient: linear-gradient(135deg, #485563 0%, #29323c 100%);
+            --text-dark: #2c3e50;
+            --text-light: #ecf0f1;
+        }
+
+        body {
+            background: var(--gray-gradient);
+            color: var(--text-dark);
+            min-height: 100vh;
+            padding: 20px;
+            transition: background 0.3s;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: var(--dark-gradient);
+            color: var(--text-light);
+            padding: 25px;
+            text-align: center;
+            border-bottom: 3px solid var(--accent-color);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        h1 i {
+            color: var(--accent-color);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--dark-gradient);
+            overflow-x: auto;
+        }
+
+        .tab {
+            flex: 1;
+            min-width: 150px;
+            padding: 18px 10px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            background: rgba(52, 152, 219, 0.2);
+        }
+
+        .tab.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 3px solid var(--accent-color);
+            font-weight: 600;
+        }
+
+        .tab i {
+            margin-right: 10px;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            min-height: 500px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .content-header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .content-header h2 {
+            color: var(--primary-dark);
+            font-size: 1.8rem;
+        }
+
+        .content-header i {
+            color: var(--accent-color);
+            font-size: 1.5rem;
+        }
+
+        .info-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .info-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .info-card h3 {
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-card p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .fractal-examples {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .fractal-item {
+            flex: 1;
+            min-width: 300px;
+            max-width: 350px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s;
+        }
+
+        .fractal-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .fractal-canvas {
+            width: 100%;
+            height: 250px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .fractal-info {
+            padding: 20px;
+        }
+
+        .fractal-info h4 {
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+        }
+
+        .fractal-info p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #555;
+        }
+
+        .method-info {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 4px solid #2ecc71;
+        }
+
+        .method-info h3 {
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .method-steps {
+            margin-left: 20px;
+            margin-top: 15px;
+        }
+
+        .method-steps li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .fractal-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        button {
+            padding: 12px 20px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        @media (max-width: 768px) {
+            .info-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                min-width: 100%;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-snowflake"></i> Фрактальный Генератор</h1>
+            <p class="subtitle">Исследуйте удивительный мир фрактальной геометрии</p>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab active" data-tab="basic">
+                <i class="fas fa-info-circle"></i> Основы фракталов
+            </button>
+            <button class="tab" data-tab="geometric">
+                <i class="fas fa-shapes"></i> Геометрические
+            </button>
+            <button class="tab" data-tab="algebraic">
+                <i class="fas fa-calculator"></i> Алгебраические
+            </button>
+            <button class="tab" data-tab="stochastic">
+                <i class="fas fa-random"></i> Стохастические
+            </button>
+        </div>
+        
+        <!-- Основная информация о фракталах -->
+        <div id="basic" class="tab-content active">
+            <div class="content-header">
+                <i class="fas fa-info-circle"></i>
+                <h2>Основы фракталов</h2>
+            </div>
+            
+            <div class="info-section">
+                <div class="info-card">
+                    <h3><i class="fas fa-question-circle"></i> Что такое фрактал?</h3>
+                    <p>Фрактал — это геометрическая фигура, обладающая свойством самоподобия. Это означает, что фрактал выглядит одинаково при любом масштабе: его части являются уменьшенными копиями целого.</p>
+                    <p>Термин "фрактал" введен математиком Бенуа Мандельбротом в 1975 году и происходит от латинского слова "fractus" — дробный, ломанный.</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3><i class="fas fa-bullseye"></i> Основные свойства</h3>
+                    <p><strong>Самоподобие:</strong> Части фрактала подобны целому объекту.</p>
+                    <p><strong>Дробная размерность:</strong> Фракталы имеют дробную размерность (не целочисленную), что отличает их от обычных геометрических фигур.</p>
+                    <p><strong>Рекурсивность:</strong> Фракталы строятся с помощью повторяющихся процедур (рекурсии).</p>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <div class="info-card">
+                    <h3><i class="fas fa-history"></i> История изучения</h3>
+                    <p>Хотя примеры фракталов известны давно (например, треугольник Серпинского описан в 1915 году), систематическое изучение началось только в 1970-х годах с работ Бенуа Мандельброта.</p>
+                    <p>Мандельброт показал, что фракталы часто встречаются в природе: береговые линии, горные хребты, облака, кровеносная система и т.д.</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3><i class="fas fa-globe"></i> Применение фракталов</h3>
+                    <p><strong>В науке:</strong> Моделирование природных объектов, анализ сложных систем.</p>
+                    <p><strong>В технике:</strong> Сжатие изображений, антенны фрактальной формы.</p>
+                    <p><strong>В искусстве:</strong> Генерация пейзажей, текстур, компьютерная графика.</p>
+                </div>
+            </div>
+            
+            <div class="method-info">
+                <h3><i class="fas fa-lightbulb"></i> Интересные факты</h3>
+                <ul class="method-steps">
+                    <li>Множество Мандельброта — самый известный фрактал, но он был визуализирован только с появлением компьютеров.</li>
+                    <li>Длина береговой линии Великобритании при измерении фрактальным методом оказывается бесконечной.</li>
+                    <li>Фракталы используются в медицине для анализа ЭКГ и изображений опухолей.</li>
+                    <li>Многие финансовые модели используют фракталы для анализа изменчивости рынков.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Геометрические фракталы -->
+        <div id="geometric" class="tab-content">
+            <div class="content-header">
+                <i class="fas fa-shapes"></i>
+                <h2>Геометрические фракталы</h2>
+            </div>
+            
+            <div class="method-info">
+                <h3><i class="fas fa-ruler-combined"></i> Метод построения</h3>
+                <p>Геометрические фракталы строятся с помощью повторяющихся геометрических операций. Простейший метод — система итерируемых функций (IFS), где на каждом шаге определенная фигура заменяется набором меньших подобных фигур.</p>
+                <p>Основные шаги построения:</p>
+                <ol class="method-steps">
+                    <li>Выбор начальной фигуры (инициатор)</li>
+                    <li>Определение правила замены (генератор)</li>
+                    <li>Применение правила замены к каждой части фигуры</li>
+                    <li>Повторение процесса заданное количество раз (итераций)</li>
+                </ol>
+            </div>
+            
+            <div class="fractal-examples">
+                <div class="fractal-item">
+                    <div class="fractal-canvas">
+                        <canvas id="kochCanvas" width="300" height="250"></canvas>
+                    </div>
+                    <div class="fractal-info">
+                        <h4>Кривая Коха</h4>
+                        <p>Построена в 1904 году шведским математиком Хельге фон Кохом. Каждый отрезок заменяется на 4 отрезка в 3 раза меньшей длины. Кривая имеет бесконечную длину, но ограниченную площадь.</p>
+                        <div class="fractal-controls">
+                            <div class="control-group">
+                                <label for="kochIterations">Итерации: <span id="kochIterValue">4</span></label>
+                                <input type="range" id="kochIterations" min="0" max="6" value="4">
+                            </div>
+                            <button id="generateKoch">Обновить</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="fractal-item">
+                    <div class="fractal-canvas">
+                        <canvas id="sierpinskiCanvas" width="300" height="250"></canvas>
+                    </div>
+                    <div class="fractal-info">
+                        <h4>Треугольник Серпинского</h4>
+                        <p>Описан польским математиком Вацлавом Серпинским в 1915 году. Начинается с равностороннего треугольника, который делится на 4 меньших треугольника, после чего центральный удаляется.</p>
+                        <div class="fractal-controls">
+                            <div class="control-group">
+                                <label for="sierpinskiIterations">Итерации: <span id="sierpinskiIterValue">4</span></label>
+                                <input type="range" id="sierpinskiIterations" min="0" max="7" value="4">
+                            </div>
+                            <button id="generateSierpinski">Обновить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Алгебраические фракталы -->
+        <div id="algebraic" class="tab-content">
+            <div class="content-header">
+                <i class="fas fa-calculator"></i>
+                <h2>Алгебраические фракталы</h2>
+            </div>
+            
+            <div class="method-info">
+                <h3><i class="fas fa-superscript"></i> Метод построения</h3>
+                <p>Алгебраические фракталы строятся с помощью итераций функций в комплексной плоскости. Наиболее известный пример — множество Мандельброта, которое строится по формуле: zₙ₊₁ = zₙ² + c.</p>
+                <p>Процесс построения:</p>
+                <ol class="method-steps">
+                    <li>Выбор области комплексной плоскости для визуализации</li>
+                    <li>Для каждой точки c вычисление итераций функции</li>
+                    <li>Определение, уходит ли последовательность в бесконечность</li>
+                    <li>Раскрашивание точки в зависимости от скорости расходимости</li>
+                </ol>
+            </div>
+            
+            <div class="fractal-examples">
+                <div class="fractal-item">
+                    <div class="fractal-canvas">
+                        <canvas id="mandelbrotCanvas" width="300" height="250"></canvas>
+                    </div>
+                    <div class="fractal-info">
+                        <h4>Множество Мандельброта</h4>
+                        <p>Самый известный фрактал, названный в честь Бенуа Мандельброта. Состоит из точек c комплексной плоскости, для которых итерации zₙ₊₁ = zₙ² + c не уходят в бесконечность при z₀ = 0.</p>
+                        <div class="fractal-controls">
+                            <div class="control-group">
+                                <label for="mandelbrotIterations">Итерации: <span id="mandelbrotIterValue">100</span></label>
+                                <input type="range" id="mandelbrotIterations" min="20" max="500" value="100" step="20">
+                            </div>
+                            <button id="generateMandelbrot">Обновить</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="fractal-item">
+                    <div class="fractal-canvas">
+                        <canvas id="juliaCanvas" width="300" height="250"></canvas>
+                    </div>
+                    <div class="fractal-info">
+                        <h4>Множество Жюлиа</h4>
+                        <p>Похоже на множество Мандельброта, но строится для фиксированного значения c. Разные значения c дают совершенно разные формы фракталов — от связных до полностью "пылевидных".</p>
+                        <div class="fractal-controls">
+                            <div class="control-group">
+                                <label for="juliaIterations">Итерации: <span id="juliaIterValue">100</span></label>
+                                <input type="range" id="juliaIterations" min="20" max="500" value="100" step="20">
+                            </div>
+                            <button id="generateJulia">Обновить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Стохастические фракталы -->
+        <div id="stochastic" class="tab-content">
+            <div class="content-header">
+                <i class="fas fa-random"></i>
+                <h2>Стохастические фракталы</h2>
+            </div>
+            
+            <div class="method-info">
+                <h3><i class="fas fa-dice"></i> Метод построения</h3>
+                <p>Стохастические (случайные) фракталы используют элементы случайности в процессе построения. Это позволяет создавать более реалистичные модели природных объектов, таких как горы, облака, береговые линии.</p>
+                <p>Наиболее известный алгоритм — фрактальный шум (алгоритм midpoint displacement):</p>
+                <ol class="method-steps">
+                    <li>Начальный отрезок делится пополам</li>
+                    <li>Средняя точка смещается на случайную величину</li>
+                    <li>Процесс повторяется для каждого нового отрезка</li>
+                    <li>Амплитуда случайного смещения уменьшается с каждой итерацией</li>
+                </ol>
+            </div>
+            
+            <div class="fractal-examples">
+                <div class="fractal-item">
+                    <div class="fractal-canvas">
+                        <canvas id="mountainCanvas" width="300" height="250"></canvas>
+                    </div>
+                    <div class="fractal-info">
+                        <h4>Фрактальные горы</h4>
+                        <p>Создаются с помощью алгоритма midpoint displacement в двух измерениях. Используются для генерации реалистичных ландшафтов в компьютерной графике и играх.</p>
+                        <div class="fractal-controls">
+                            <div class="control-group">
+                                <label for="mountainRoughness">Шероховатость: <span id="mountainRoughValue">0.7</span></label>
+                                <input type="range" id="mountainRoughness" min="0.1" max="1" value="0.7" step="0.1">
+                            </div>
+                            <button id="generateMountain">Сгенерировать</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="fractal-item">
+                    <div class="fractal-canvas">
+                        <canvas id="cloudCanvas" width="300" height="250"></canvas>
+                    </div>
+                    <div class="fractal-info">
+                        <h4>Фрактальные облака</h4>
+                        <p>Создаются с помощью фрактального шума Перлина. Алгоритм генерирует псевдослучайные значения, которые сохраняют самоподобие на разных масштабах, создавая реалистичные текстуры облаков.</p>
+                        <div class="fractal-controls">
+                            <div class="control-group">
+                                <label for="cloudDetail">Детализация: <span id="cloudDetailValue">5</span></label>
+                                <input type="range" id="cloudDetail" min="1" max="8" value="5">
+                            </div>
+                            <button id="generateCloud">Сгенерировать</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Управление вкладками
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.getAttribute('data-tab');
+                
+                // Обновляем активные вкладки
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(targetTab).classList.add('active');
+                
+                // Перерисовываем фракталы при переключении вкладок
+                if (targetTab === 'geometric') {
+                    drawKochCurve(4);
+                    drawSierpinskiTriangle(4);
+                } else if (targetTab === 'algebraic') {
+                    drawMandelbrot(100);
+                    drawJuliaSet(100);
+                } else if (targetTab === 'stochastic') {
+                    drawMountain(0.7);
+                    drawCloud(5);
+                }
+            });
+        });
+
+        // ================== ГЕОМЕТРИЧЕСКИЕ ФРАКТАЛЫ ==================
+        
+        // Кривая Коха
+        function drawKochCurve(iterations) {
+            const canvas = document.getElementById('kochCanvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, width, height);
+            
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 1.5;
+            
+            // Начальные точки
+            const startX = width * 0.1;
+            const startY = height * 0.7;
+            const length = width * 0.8;
+            
+            function koch(x, y, len, angle, depth) {
+                if (depth === 0) {
+                    const x2 = x + len * Math.cos(angle);
+                    const y2 = y - len * Math.sin(angle);
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                    return;
+                }
+                
+                const newLen = len / 3;
+                
+                // Рекурсивно рисуем 4 отрезка
+                koch(x, y, newLen, angle, depth - 1);
+                
+                const x1 = x + newLen * Math.cos(angle);
+                const y1 = y - newLen * Math.sin(angle);
+                koch(x1, y1, newLen, angle + Math.PI/3, depth - 1);
+                
+                const x2 = x1 + newLen * Math.cos(angle + Math.PI/3);
+                const y2 = y1 - newLen * Math.sin(angle + Math.PI/3);
+                koch(x2, y2, newLen, angle - Math.PI/3, depth - 1);
+                
+                const x3 = x + 2 * newLen * Math.cos(angle);
+                const y3 = y - 2 * newLen * Math.sin(angle);
+                koch(x3, y3, newLen, angle, depth - 1);
+            }
+            
+            koch(startX, startY, length, 0, iterations);
+        }
+        
+        // Треугольник Серпинского
+        function drawSierpinskiTriangle(iterations) {
+            const canvas = document.getElementById('sierpinskiCanvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, width, height);
+            
+            ctx.fillStyle = '#2ecc71';
+            
+            function sierpinski(x, y, size, depth) {
+                if (depth === 0) {
+                    // Рисуем треугольник
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + size/2, y - size * Math.sqrt(3)/2);
+                    ctx.lineTo(x + size, y);
+                    ctx.closePath();
+                    ctx.fill();
+                    return;
+                }
+                
+                const newSize = size / 2;
+                
+                // Рекурсивно рисуем 3 треугольника
+                sierpinski(x, y, newSize, depth - 1);
+                sierpinski(x + newSize, y, newSize, depth - 1);
+                sierpinski(x + newSize/2, y - newSize * Math.sqrt(3)/2, newSize, depth - 1);
+            }
+            
+            const size = Math.min(width, height) * 0.8;
+            const startX = (width - size) / 2;
+            const startY = height * 0.9;
+            
+            sierpinski(startX, startY, size, iterations);
+        }
+        
+        // Обработчики для геометрических фракталов
+        document.getElementById('generateKoch').addEventListener('click', () => {
+            const iterations = parseInt(document.getElementById('kochIterations').value);
+            document.getElementById('kochIterValue').textContent = iterations;
+            drawKochCurve(iterations);
+        });
+        
+        document.getElementById('kochIterations').addEventListener('input', function() {
+            document.getElementById('kochIterValue').textContent = this.value;
+        });
+        
+        document.getElementById('generateSierpinski').addEventListener('click', () => {
+            const iterations = parseInt(document.getElementById('sierpinskiIterations').value);
+            document.getElementById('sierpinskiIterValue').textContent = iterations;
+            drawSierpinskiTriangle(iterations);
+        });
+        
+        document.getElementById('sierpinskiIterations').addEventListener('input', function() {
+            document.getElementById('sierpinskiIterValue').textContent = this.value;
+        });
+        
+        // ================== АЛГЕБРАИЧЕСКИЕ ФРАКТАЛЫ ==================
+        
+        // Множество Мандельброта
+        function drawMandelbrot(maxIterations) {
+            const canvas = document.getElementById('mandelbrotCanvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            const imageData = ctx.createImageData(width, height);
+            const data = imageData.data;
+            
+            // Параметры отображения
+            const centerX = -0.5;
+            const centerY = 0;
+            const scale = 3.5 / Math.min(width, height);
+            
+            for (let x = 0; x < width; x++) {
+                for (let y = 0; y < height; y++) {
+                    // Преобразуем координаты пикселя в комплексную плоскость
+                    const a = (x - width/2) * scale + centerX;
+                    const b = (y - height/2) * scale + centerY;
+                    
+                    let ca = a;
+                    let cb = b;
+                    let n = 0;
+                    
+                    // Итерации для проверки принадлежности к множеству Мандельброта
+                    while (n < maxIterations) {
+                        const aa = a * a - b * b;
+                        const bb = 2 * a * b;
+                        a = aa + ca;
+                        b = bb + cb;
+                        
+                        if (a * a + b * b > 4) break;
+                        n++;
+                    }
+                    
+                    // Раскрашиваем пиксель
+                    const idx = (x + y * width) * 4;
+                    const hue = (n / maxIterations) * 360;
+                    
+                    if (n === maxIterations) {
+                        // Точка внутри множества - черный цвет
+                        data[idx] = 0;
+                        data[idx+1] = 0;
+                        data[idx+2] = 0;
+                    } else {
+                        // Точка снаружи - цвет в зависимости от скорости расходимости
+                        const saturation = 100;
+                        const lightness = 50 * (n / maxIterations);
+                        
+                        // Преобразуем HSL в RGB
+                        const rgb = hslToRgb(hue/360, saturation/100, lightness/100);
+                        data[idx] = rgb[0];
+                        data[idx+1] = rgb[1];
+                        data[idx+2] = rgb[2];
+                    }
+                    data[idx+3] = 255; // Альфа-канал
+                }
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+        }
+        
+        // Множество Жюлиа
+        function drawJuliaSet(maxIterations) {
+            const canvas = document.getElementById('juliaCanvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            const imageData = ctx.createImageData(width, height);
+            const data = imageData.data;
+            
+            // Параметры отображения
+            const centerX = 0;
+            const centerY = 0;
+            const scale = 3.5 / Math.min(width, height);
+            
+            // Параметр c для множества Жюлиа
+            const cRe = -0.7;
+            const cIm = 0.27015;
+            
+            for (let x = 0; x < width; x++) {
+                for (let y = 0; y < height; y++) {
+                    // Преобразуем координаты пикселя в комплексную плоскость
+                    let a = (x - width/2) * scale + centerX;
+                    let b = (y - height/2) * scale + centerY;
+                    
+                    let n = 0;
+                    
+                    // Итерации для проверки принадлежности к множеству Жюлиа
+                    while (n < maxIterations) {
+                        const aa = a * a - b * b;
+                        const bb = 2 * a * b;
+                        a = aa + cRe;
+                        b = bb + cIm;
+                        
+                        if (a * a + b * b > 4) break;
+                        n++;
+                    }
+                    
+                    // Раскрашиваем пиксель
+                    const idx = (x + y * width) * 4;
+                    const hue = (n / maxIterations) * 360;
+                    
+                    if (n === maxIterations) {
+                        // Точка внутри множества - черный цвет
+                        data[idx] = 0;
+                        data[idx+1] = 0;
+                        data[idx+2] = 0;
+                    } else {
+                        // Точка снаружи - цвет в зависимости от скорости расходимости
+                        const saturation = 100;
+                        const lightness = 50 * (n / maxIterations);
+                        
+                        // Преобразуем HSL в RGB
+                        const rgb = hslToRgb(hue/360, saturation/100, lightness/100);
+                        data[idx] = rgb[0];
+                        data[idx+1] = rgb[1];
+                        data[idx+2] = rgb[2];
+                    }
+                    data[idx+3] = 255; // Альфа-канал
+                }
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+        }
+        
+        // Вспомогательная функция для преобразования HSL в RGB
+        function hslToRgb(h, s, l) {
+            let r, g, b;
+            
+            if (s === 0) {
+                r = g = b = l; // Оттенки серого
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+                
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+            
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+        
+        // Обработчики для алгебраических фракталов
+        document.getElementById('generateMandelbrot').addEventListener('click', () => {
+            const iterations = parseInt(document.getElementById('mandelbrotIterations').value);
+            document.getElementById('mandelbrotIterValue').textContent = iterations;
+            drawMandelbrot(iterations);
+        });
+        
+        document.getElementById('mandelbrotIterations').addEventListener('input', function() {
+            document.getElementById('mandelbrotIterValue').textContent = this.value;
+        });
+        
+        document.getElementById('generateJulia').addEventListener('click', () => {
+            const iterations = parseInt(document.getElementById('juliaIterations').value);
+            document.getElementById('juliaIterValue').textContent = iterations;
+            drawJuliaSet(iterations);
+        });
+        
+        document.getElementById('juliaIterations').addEventListener('input', function() {
+            document.getElementById('juliaIterValue').textContent = this.value;
+        });
+        
+        // ================== СТОХАСТИЧЕСКИЕ ФРАКТАЛЫ ==================
+        
+        // Фрактальные горы
+        function drawMountain(roughness) {
+            const canvas = document.getElementById('mountainCanvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Алгоритм midpoint displacement для 1D
+            function midpointDisplacement(left, right, arr, depth, maxDepth, range) {
+                if (depth >= maxDepth) return;
+                
+                const mid = Math.floor((left + right) / 2);
+                const avg = (arr[left] + arr[right]) / 2;
+                
+                // Добавляем случайное смещение
+                const displacement = (Math.random() - 0.5) * range;
+                arr[mid] = avg + displacement;
+                
+                // Уменьшаем диапазон для следующей итерации
+                const newRange = range * Math.pow(2, -roughness);
+                
+                // Рекурсивно обрабатываем левую и правую половины
+                midpointDisplacement(left, mid, arr, depth + 1, maxDepth, newRange);
+                midpointDisplacement(mid, right, arr, depth + 1, maxDepth, newRange);
+            }
+            
+            // Создаем массив высот
+            const points = 65; // 2^6 + 1
+            const heights = new Array(points).fill(0);
+            heights[0] = height * 0.3 + Math.random() * height * 0.2;
+            heights[points-1] = height * 0.3 + Math.random() * height * 0.2;
+            
+            midpointDisplacement(0, points-1, heights, 0, 6, height * 0.4);
+            
+            // Рисуем горы
+            ctx.fillStyle = '#7f8c8d';
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 1;
+            
+            ctx.beginPath();
+            ctx.moveTo(0, height);
+            
+            for (let i = 0; i < points; i++) {
+                const x = i * (width / (points - 1));
+                ctx.lineTo(x, height - heights[i]);
+            }
+            
+            ctx.lineTo(width, height);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Добавляем снежные вершины
+            ctx.fillStyle = '#ecf0f1';
+            ctx.beginPath();
+            ctx.moveTo(width * 0.4, height - heights[Math.floor(points * 0.4)]);
+            
+            for (let i = Math.floor(points * 0.4); i < Math.floor(points * 0.6); i++) {
+                const x = i * (width / (points - 1));
+                if (heights[i] > height * 0.5) {
+                    ctx.lineTo(x, height - heights[i]);
+                }
+            }
+            
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // Фрактальные облака
+        function drawCloud(detail) {
+            const canvas = document.getElementById('cloudCanvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = '#3498db';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Упрощенный алгоритм фрактального шума
+            function fractalNoise(x, y, depth) {
+                if (depth <= 0) return Math.random();
+                
+                const scale = Math.pow(2, depth - 1);
+                return (fractalNoise(x * 2, y * 2, depth - 1) * 0.5 + 
+                        fractalNoise(x * 2 + 100, y * 2 + 100, depth - 1) * 0.5) * 0.7;
+            }
+            
+            // Создаем изображение облаков
+            const imageData = ctx.createImageData(width, height);
+            const data = imageData.data;
+            
+            for (let x = 0; x < width; x++) {
+                for (let y = 0; y < height; y++) {
+                    // Нормализованные координаты
+                    const nx = x / width;
+                    const ny = y / height;
+                    
+                    // Генерируем значение шума
+                    let noise = 0;
+                    for (let i = 0; i < detail; i++) {
+                        const scale = Math.pow(2, i);
+                        noise += fractalNoise(nx * scale, ny * scale, i + 1) / scale;
+                    }
+                    
+                    // Нормализуем шум
+                    noise = Math.min(1, Math.max(0, noise * 0.8));
+                    
+                    // Преобразуем в альфа-канал для облаков
+                    const alpha = noise > 0.5 ? (noise - 0.5) * 2 * 255 : 0;
+                    
+                    const idx = (x + y * width) * 4;
+                    data[idx] = 255;     // R
+                    data[idx+1] = 255;   // G
+                    data[idx+2] = 255;   // B
+                    data[idx+3] = alpha; // A
+                }
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+        }
+        
+        // Обработчики для стохастических фракталов
+        document.getElementById('generateMountain').addEventListener('click', () => {
+            const roughness = parseFloat(document.getElementById('mountainRoughness').value);
+            document.getElementById('mountainRoughValue').textContent = roughness;
+            drawMountain(roughness);
+        });
+        
+        document.getElementById('mountainRoughness').addEventListener('input', function() {
+            document.getElementById('mountainRoughValue').textContent = this.value;
+        });
+        
+        document.getElementById('generateCloud').addEventListener('click', () => {
+            const detail = parseInt(document.getElementById('cloudDetail').value);
+            document.getElementById('cloudDetailValue').textContent = detail;
+            drawCloud(detail);
+        });
+        
+        document.getElementById('cloudDetail').addEventListener('input', function() {
+            document.getElementById('cloudDetailValue').textContent = this.value;
+        });
+        
+        // Инициализация фракталов при загрузке страницы
+        window.onload = function() {
+            drawKochCurve(4);
+            drawSierpinskiTriangle(4);
+            drawMandelbrot(100);
+            drawJuliaSet(100);
+            drawMountain(0.7);
+            drawCloud(5);
+        };
+    </script>
+</body>
+</html>
