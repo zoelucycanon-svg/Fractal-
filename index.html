@@ -674,67 +674,82 @@
         // ================== АЛГЕБРАИЧЕСКИЕ ФРАКТАЛЫ ==================
         
         // Множество Мандельброта
-        function drawMandelbrot(maxIterations) {
-            const canvas = document.getElementById('mandelbrotCanvas');
-            const ctx = canvas.getContext('2d');
-            const width = canvas.width;
-            const height = canvas.height;
-            
-            const imageData = ctx.createImageData(width, height);
-            const data = imageData.data;
-            
-            // Параметры отображения
-            const centerX = -0.5;
-            const centerY = 0;
-            const scale = 3.5 / Math.min(width, height);
-            
-            for (let x = 0; x < width; x++) {
-                for (let y = 0; y < height; y++) {
-                    // Преобразуем координаты пикселя в комплексную плоскость
-                    const a = (x - width/2) * scale + centerX;
-                    const b = (y - height/2) * scale + centerY;
-                    
-                    let ca = a;
-                    let cb = b;
-                    let n = 0;
-                    
-                    // Итерации для проверки принадлежности к множеству Мандельброта
-                    while (n < maxIterations) {
-                        const aa = a * a - b * b;
-                        const bb = 2 * a * b;
-                        a = aa + ca;
-                        b = bb + cb;
-                        
-                        if (a * a + b * b > 4) break;
-                        n++;
-                    }
-                    
-                    // Раскрашиваем пиксель
-                    const idx = (x + y * width) * 4;
-                    const hue = (n / maxIterations) * 360;
-                    
-                    if (n === maxIterations) {
-                        // Точка внутри множества - черный цвет
-                        data[idx] = 0;
-                        data[idx+1] = 0;
-                        data[idx+2] = 0;
-                    } else {
-                        // Точка снаружи - цвет в зависимости от скорости расходимости
-                        const saturation = 100;
-                        const lightness = 50 * (n / maxIterations);
-                        
-                        // Преобразуем HSL в RGB
-                        const rgb = hslToRgb(hue/360, saturation/100, lightness/100);
-                        data[idx] = rgb[0];
-                        data[idx+1] = rgb[1];
-                        data[idx+2] = rgb[2];
-                    }
-                    data[idx+3] = 255; // Альфа-канал
+function drawMandelbrot(maxIterations) {
+    const canvas = document.getElementById('mandelbrotCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const width = canvas.width;
+    const height = canvas.height;
+
+    const imageData = ctx.createImageData(width, height);
+    const data = imageData.data;
+
+    // Параметры отображения
+    const centerX = -0.5;
+    const centerY = 0;
+    const scale = 3.5 / Math.min(width, height);
+
+    for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
+
+            // Координаты точки c
+            const ca = (x - width / 2) * scale + centerX;
+            const cb = (y - height / 2) * scale + centerY;
+
+            // z = 0
+            let a = 0;
+            let b = 0;
+
+            let n = 0;
+
+            // Итерации
+            while (n < maxIterations) {
+
+                const aa = a * a - b * b + ca;
+                const bb = 2 * a * b + cb;
+
+                a = aa;
+                b = bb;
+
+                // Проверка расходимости
+                if (a * a + b * b > 4) {
+                    break;
                 }
+
+                n++;
             }
-            
-            ctx.putImageData(imageData, 0, 0);
+
+            // Индекс пикселя
+            const idx = (x + y * width) * 4;
+
+            if (n === maxIterations) {
+                // Внутри множества
+                data[idx] = 0;
+                data[idx + 1] = 0;
+                data[idx + 2] = 0;
+            } else {
+
+                // Цвет
+                const hue = (n / maxIterations) * 360;
+
+                const rgb = hslToRgb(
+                    hue / 360,
+                    1,
+                    0.5
+                );
+
+                data[idx] = rgb[0];
+                data[idx + 1] = rgb[1];
+                data[idx + 2] = rgb[2];
+            }
+
+            data[idx + 3] = 255;
         }
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+}
+        
         
         // Множество Жюлиа
         function drawJuliaSet(maxIterations) {
