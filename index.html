@@ -674,83 +674,80 @@
         // ================== АЛГЕБРАИЧЕСКИЕ ФРАКТАЛЫ ==================
         
         // Множество Мандельброта
-function drawMandelbrot(maxIterations) {
-    const canvas = document.getElementById('mandelbrotCanvas');
-    const ctx = canvas.getContext('2d');
-
-    const width = canvas.width;
-    const height = canvas.height;
-
-    const imageData = ctx.createImageData(width, height);
-    const data = imageData.data;
+        // Множество Мандельброта
+        function drawMandelbrot(maxIterations) {
+            const canvas = document.getElementById('mandelbrotCanvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const imageData = ctx.createImageData(width, height);
+            const data = imageData.data;
 
     // Параметры отображения
-    const centerX = -0.5;
-    const centerY = 0;
-    const scale = 3.5 / Math.min(width, height);
-
-    for (let x = 0; x < width; x++) {
-        for (let y = 0; y < height; y++) {
+            const centerX = -0.5;
+            const centerY = 0;
+            const scale = 3.5 / Math.min(width, height);
+    
+            for (let x = 0; x < width; x++) {
+                for (let y = 0; y < height; y++) {
 
             // Координаты точки c
-            const ca = (x - width / 2) * scale + centerX;
-            const cb = (y - height / 2) * scale + centerY;
+                    const ca = (x - width / 2) * scale + centerX;
+                    const cb = (y - height / 2) * scale + centerY;
 
             // z = 0
-            let a = 0;
-            let b = 0;
-
-            let n = 0;
+                    let a = 0;
+                    let b = 0;
+                    let n = 0;
 
             // Итерации
-            while (n < maxIterations) {
-
-                const aa = a * a - b * b + ca;
-                const bb = 2 * a * b + cb;
-
-                a = aa;
-                b = bb;
+                    while (n < maxIterations) {
+                        const aa = a * a - b * b + ca;
+                        const bb = 2 * a * b + cb;
+                
+                        a = aa;
+                        b = bb;
 
                 // Проверка расходимости
-                if (a * a + b * b > 4) {
-                    break;
-                }
+                        if (a * a + b * b > 4) {
+                            break;
+                        }
 
-                n++;
-            }
+                        n++;
+                    }
 
             // Индекс пикселя
-            const idx = (x + y * width) * 4;
+                    const idx = (x + y * width) * 4;
 
-            if (n === maxIterations) {
+                    if (n === maxIterations) {
                 // Внутри множества
-                data[idx] = 0;
-                data[idx + 1] = 0;
-                data[idx + 2] = 0;
-            } else {
+                        data[idx] = 0;
+                        data[idx + 1] = 0;
+                        data[idx + 2] = 0;
+                    } else {
 
                 // Цвет
-                const hue = (n / maxIterations) * 360;
+                        const hue = (n / maxIterations) * 360;
 
-                const rgb = hslToRgb(
-                    hue / 360,
-                    1,
-                    0.5
-                );
+                        const rgb = hslToRgb(
+                            hue / 360,
+                            1,
+                            0.5
+                        );
 
-                data[idx] = rgb[0];
-                data[idx + 1] = rgb[1];
-                data[idx + 2] = rgb[2];
+                
+                        data[idx] = rgb[0];
+                        data[idx + 1] = rgb[1];
+                        data[idx + 2] = rgb[2];
+                    }
+
+                    data[idx + 3] = 255;
+                }
             }
-
-            data[idx + 3] = 255;
+    
+            ctx.putImageData(imageData, 0, 0);
         }
-    }
 
-    ctx.putImageData(imageData, 0, 0);
-}
-        
-        
         // Множество Жюлиа
         function drawJuliaSet(maxIterations) {
             const canvas = document.getElementById('juliaCanvas');
