@@ -1037,10 +1037,19 @@
 
                    const idx = (x + y * width) * 4;
 
-                   data[idx] = 255;       // R
-                   data[idx + 1] = 255;   // G
-                   data[idx + 2] = 255;   // B
-                   data[idx + 3] = alpha; // A
+                   const skyR = 52;
+                   const skyG = 152;
+                   const skyB = 219;
+
+
+                   data[idx] = lerp(skyR, 255, cloud);
+
+                   data[idx + 1] = lerp(skyG, 255, cloud);
+
+                   data[idx + 2] = lerp(skyB, 255, cloud);
+
+                   data[idx + 3] = 255;data[idx] = 255;       
+                   
         
                }
     
